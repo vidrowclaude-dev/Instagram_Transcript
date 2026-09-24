@@ -32,8 +32,12 @@ with st.sidebar:
                                    help="Turns Speaker A/B into 'Mom', 'Delivery Guy', 'VO' etc.")
     romanize = st.checkbox("Write Hinglish in Roman script", value=True, disabled=not has_claude)
     show_ts = st.checkbox("Show timestamps", value=True)
+    browser_choice = st.selectbox(
+        "Use Instagram login from", ["auto", *pipeline.BROWSERS, "none"], index=0,
+        help="Instagram usually blocks anonymous downloads. The app borrows your Instagram session from a "
+             "browser where you're logged in. 'auto' tries each browser until one works.")
     cookies_file = st.text_input("Instagram cookies.txt (optional)", value=os.getenv("INSTAGRAM_COOKIES", ""),
-                                 help="Needed if Instagram asks you to log in. Export with a 'Get cookies.txt' browser extension.")
+                                 help="Only if the browser login above does not work. Export with a 'Get cookies.txt LOCALLY' browser extension.")
 
     st.divider()
     st.markdown("**Keys detected**")
@@ -43,8 +47,9 @@ with st.sidebar:
 # ---------------------------------------------------------------- input
 tab_url, tab_file = st.tabs(["Instagram link", "Upload video"])
 with tab_url:
-    url = st.text_input("Instagram URL", placeholder="https://www.instagram.com/reel/XXXXXXXXX/")
+    url = st.text_input("Instagram URL (or a direct video link)", placeholder="https://www.instagram.com/reel/XXXXXXXXX/")
 with tab_file:
+    st.caption("Downloaded the reel with a saver site like fastvideosave.net? Drop the file here.")
     upload = st.file_uploader("Video file", type=["mp4", "mov", "m4a", "mp3", "webm"])
 
 go = st.button("Generate transcript", type="primary", width="stretch")
@@ -80,11 +85,12 @@ if go:
                 name_with_claude=name_with_claude,
                 romanize_hinglish=romanize,
                 cookies_file=cookies_file or None,
+                browser=None if browser_choice == "none" else browser_choice,
                 progress=progress,
             )
         except Exception as e:
             status.update(label="Failed", state="error")
-            st.error(str(e))
+            st.error(str(e).replace("\n", "  \n"))
             st.stop()
         status.update(label="Transcript ready", state="complete", expanded=False)
 

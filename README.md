@@ -59,10 +59,16 @@ python cli.py --help                                                  # all opti
 
 ## If Instagram blocks the download
 
-Instagram sometimes returns "login required" or rate-limits anonymous downloads. Two fixes:
+Instagram usually answers anonymous downloads with "login required". The app handles this by itself: it borrows your Instagram login from a browser on your computer (Chrome, Safari, Firefox, Edge, Brave, Opera, Vivaldi). **Just be logged in to instagram.com in one of them.** Pick a specific browser under *Use Instagram login from* in the sidebar (or `--browser chrome` on the CLI) if `auto` picks the wrong one.
 
-1. **Cookies** — install a browser extension like *Get cookies.txt LOCALLY*, open instagram.com while logged in, export `cookies.txt`, and put its path in the sidebar (or `INSTAGRAM_COOKIES` in `.env`).
-2. **Upload tab** — download the reel with any reel-saver and drop the file into the *Upload video* tab. Everything after the download step is identical.
+- **Mac + Chrome:** a Keychain prompt appears the first time — enter your Mac password and click *Always Allow*.
+- **Mac + Safari:** give your Terminal app *Full Disk Access* (System Settings → Privacy & Security).
+- **Windows + Chrome/Edge:** close the browser completely if you get a "could not copy cookie database" error, or use Firefox.
+
+Other options:
+
+1. **Reel-saver site** (e.g. fastvideosave.net) — download the video, then drop the file into the *Upload video* tab (CLI: `--file reel.mp4`). You can also paste the site's direct `.mp4` download link into the URL box.
+2. **cookies.txt** — export with the *Get cookies.txt LOCALLY* extension while logged in to instagram.com, then put its path in the sidebar (or `INSTAGRAM_COOKIES` in `.env`, or `--cookies` on the CLI).
 
 Also keep yt-dlp current — Instagram changes things often: `pip install -U yt-dlp`.
 

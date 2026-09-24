@@ -29,6 +29,9 @@ def main() -> int:
     p.add_argument("--no-roman", action="store_true", help="keep Hindi in Devanagari")
     p.add_argument("--no-timestamps", action="store_true")
     p.add_argument("--cookies", default=None, help="path to Instagram cookies.txt")
+    p.add_argument("--browser", default="auto",
+                   help="browser whose Instagram login to use: auto (default), chrome, safari, firefox, edge, "
+                        "brave, ... or none")
     p.add_argument("--out", type=Path, default=None, help="directory to write .txt/.srt/.json (default: print only)")
     a = p.parse_args()
 
@@ -45,6 +48,7 @@ def main() -> int:
         name_with_claude=not a.no_claude,
         romanize_hinglish=not a.no_roman,
         cookies_file=a.cookies or os.getenv("INSTAGRAM_COOKIES") or None,
+        browser=None if a.browser == "none" else a.browser,
         progress=lambda m: print(f"• {m}", file=sys.stderr),
     )
 

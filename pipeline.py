@@ -73,12 +73,31 @@ def validate_instagram_url(url: str) -> str:
     return f"https://www.instagram.com/{kind}/{code}/"
 
 
-def download_audio(url: str, out_dir: Path, cookies_file: Optional[str] = None,
-                   progress: Progress = _noop) -> tuple[Path, dict]:
-    """Download the audio track as MP3. Returns (path, yt-dlp info dict)."""
+BROWSERS = ["chrome", "safari", "firefox", "edge", "brave", "opera", "vivaldi", "chromium"]
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*m|\[[0-9;]*m")
+_LOGIN_HINTS = ("login required", "rate-limit", "log in", "not available")
+
+
+class LoginRequired(RuntimeError):
+    pass
+
+
+class _SilentLogger:
+    """yt-dlp prints errors itself even with quiet=True; we report them our own way."""
+    def debug(self, msg): pass
+    def info(self, msg): pass
+    def warning(self, msg): pass
+    def error(self, msg): pass
+
+
+def _clean(msg) -> str:
+    return _ANSI_RE.sub("", str(msg)).replace("ERROR: ", "").strip()
+
+
+def _download_once(url: str, out_dir: Path, cookies_file: Optional[str],
+                   browser: Optional[str]) -> tuple[Path, dict]:
     import yt_dlp  # imported lazily so the module loads without it
 
-    out_dir.mkdir(parents=True, exist_ok=True)
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": str(out_dir / "%(id)s.%(ext)s"),
@@ -90,13 +109,22 @@ def download_audio(url: str, out_dir: Path, cookies_file: Optional[str] = None,
         "noplaylist": True,
         "quiet": True,
         "no_warnings": True,
+        "color": {"stdout": "no_color", "stderr": "no_color"},
+        "logger": _SilentLogger(),
     }
     if cookies_file:
         ydl_opts["cookiefile"] = cookies_file
+    if browser:
+        ydl_opts["cookiesfrombrowser"] = (browser,)
 
-    progress("Downloading audio from Instagram…")
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+    except yt_dlp.utils.DownloadError as e:
+        msg = _clean(e)
+        if any(h in msg.lower() for h in _LOGIN_HINTS):
+            raise LoginRequired(msg) from e
+        raise RuntimeError(msg) from e
 
     path = out_dir / f"{info['id']}.mp3"
     if not path.exists():
@@ -106,6 +134,74 @@ def download_audio(url: str, out_dir: Path, cookies_file: Optional[str] = None,
             raise RuntimeError("Download finished but no audio file was produced. Is ffmpeg installed?")
         path = candidates[0]
     return path, info
+
+
+def download_audio(url: str, out_dir: Path, cookies_file: Optional[str] = None,
+                   browser: Optional[str] = "auto", progress: Progress = _noop) -> tuple[Path, dict]:
+    """Download the audio track as MP3. Returns (path, yt-dlp info dict).
+
+    Instagram usually refuses anonymous downloads, so if the first try needs a login we
+    borrow the Instagram session from a browser you're logged in with.
+    `browser`: "auto" (try each installed browser), a browser name, or None to never use one.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    progress("Downloading audio…")
+
+    if cookies_file:
+        cookies_path = Path(cookies_file).expanduser()
+        if not cookies_path.exists():
+            raise RuntimeError(f"Cookies file not found: {cookies_file}")
+        try:
+            return _download_once(url, out_dir, str(cookies_path), None)
+        except LoginRequired as e:
+            raise RuntimeError(_login_help(f"cookies file was rejected, it may be expired: {e}")) from e
+
+    if browser and browser != "auto":
+        progress(f"Using your Instagram login from {browser.title()}…")
+        try:
+            return _download_once(url, out_dir, None, browser)
+        except LoginRequired as e:
+            raise RuntimeError(_login_help(str(e), [f"{browser.title()}: not logged in to Instagram"])) from e
+
+    try:
+        return _download_once(url, out_dir, None, None)
+    except LoginRequired as first:
+        if browser is None:
+            raise RuntimeError(_login_help(str(first))) from first
+
+    tried, missing = [], []
+    for b in BROWSERS:
+        try:
+            progress(f"Instagram wants a login — trying your {b.title()} session…")
+            return _download_once(url, out_dir, None, b)
+        except LoginRequired:
+            tried.append(f"{b.title()}: not logged in to Instagram")
+        except Exception as e:  # browser not installed / cookie store locked or unreadable
+            msg = (_clean(e).splitlines() or ["failed"])[0]
+            if "could not find" in msg or "unsupported platform" in msg:
+                missing.append(b.title())
+            else:
+                tried.append(f"{b.title()}: {msg[:160]}")
+    if missing:
+        tried.append("Not found on this computer: " + ", ".join(missing))
+    raise RuntimeError(_login_help("", tried))
+
+
+def _login_help(msg: str, tried: Optional[list[str]] = None) -> str:
+    lines = ["Instagram requires a login to download this post."]
+    if msg:
+        lines.append(f"({msg})")
+    if tried:
+        lines.append("Tried borrowing the login from your browsers:")
+        lines += [f"  - {t}" for t in tried]
+    lines += [
+        "Fix: log in to instagram.com in Chrome, Firefox or Safari, then try again "
+        "(you can pick that browser under 'Use Instagram login from' in the sidebar).",
+        "On a Mac, Chrome may ask for your Keychain password: click 'Always Allow'. "
+        "Safari needs Full Disk Access for your Terminal app (System Settings > Privacy & Security).",
+        "Or: export cookies.txt with the 'Get cookies.txt LOCALLY' extension, or use the Upload video tab.",
+    ]
+    return "\n".join(lines)
 
 
 def extract_audio_from_file(video_path: Path, out_dir: Path, progress: Progress = _noop) -> Path:
@@ -310,6 +406,7 @@ def run(
     name_with_claude: bool = True,
     romanize_hinglish: bool = False,
     cookies_file: Optional[str] = None,
+    browser: Optional[str] = "auto",          # "auto" | "chrome" | "safari" | … | None
     progress: Progress = _noop,
 ) -> tuple[Transcript, str]:
     """End-to-end. Returns (Transcript, synopsis)."""
@@ -325,8 +422,16 @@ def run(
     # 1. audio
     title, caption, duration, source = "", "", 0.0, ""
     if url:
-        source = validate_instagram_url(url)
-        audio, info = download_audio(source, work_dir, cookies_file, progress)
+        url = url.strip()
+        if INSTAGRAM_RE.search(url):
+            source = validate_instagram_url(url)
+            audio, info = download_audio(source, work_dir, cookies_file, browser, progress)
+        elif url.startswith(("http://", "https://")):
+            # direct video link (e.g. the "Download" link from a reel-saver site) or any site yt-dlp supports
+            source = url
+            audio, info = download_audio(source, work_dir, None, None, progress)
+        else:
+            raise ValueError("Paste an Instagram reel/post link, or a direct link to a video file.")
         title = info.get("title") or ""
         caption = info.get("description") or ""
         duration = float(info.get("duration") or 0)
