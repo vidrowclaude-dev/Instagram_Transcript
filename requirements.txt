@@ -1,6 +1,17 @@
-streamlit>=1.46
-python-dotenv>=1.0
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic-settings>=2.4
+python-multipart>=0.0.9
+SQLAlchemy>=2.0
+httpx>=0.27
+requests>=2.31
+instaloader>=4.14
 yt-dlp>=2025.1.1
-assemblyai>=0.35
+redis>=5.0
+rq>=1.16
 faster-whisper>=1.0
-anthropic>=0.40
+# Postgres instead of SQLite: uncomment and set DATABASE_URL
+# psycopg[binary]>=3.2
+
+# tests
+pytest>=8.0
