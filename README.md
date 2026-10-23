@@ -10,6 +10,28 @@ Paste an Instagram profile (or Reel links), pick the videos you want, and get ba
 
 ---
 
+## Use it from GitHub (no installs)
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/vidrowclaude-dev/Instagram_Transcript/tree/reel-vault)
+
+1. Click the button above, sign in to GitHub, then click **Create codespace**.
+2. Wait 3–5 minutes the first time while it installs ffmpeg and the Python packages. Later starts take seconds.
+3. Reel Vault opens in a new browser tab. If it doesn't, open the **Ports** tab at the bottom and click the globe icon next to **Reel Vault (8000)**.
+4. Go to **Settings** in Reel Vault and upload your `cookies.txt` (see [Instagram session](#instagram-session-cookiestxt)). In a codespace this matters more than on a laptop, because Instagram is stricter with traffic from cloud servers.
+
+Each teammate opens their own codespace, so each one has its own jobs, downloads and Instagram session.
+
+Things to know:
+
+- **It sleeps when idle.** A codespace stops after 30 minutes of inactivity, including any job running in it. Reopen it from [github.com/codespaces](https://github.com/codespaces) and the app restarts. Jobs that were interrupted resume on their own within a minute.
+- **Your files stay until the codespace is deleted.** Download the ZIPs you need. GitHub deletes codespaces that have been unused for 30 days.
+- **Cost.** Personal GitHub accounts get free monthly Codespaces hours; this setup uses a 4-core machine, so the free allowance covers roughly 30 hours a month. Check usage at [github.com/settings/billing](https://github.com/settings/billing).
+- **Transcription uses Whisper `small` here** for speed. For better Hinglish, add an `OPENAI_API_KEY` or `DEEPGRAM_API_KEY` as a [Codespaces secret](https://github.com/settings/codespaces) for this repo and pick that engine in the app. Secrets are picked up automatically, so no file edits are needed.
+- **The link is private to you.** The forwarded port needs your GitHub login. Don't set it to Public: the app has no login of its own, so anyone with the link could use your Instagram session.
+- **The app's log** is `data/server.log` in the codespace. To restart the app, run `bash .devcontainer/start.sh` in the codespace terminal.
+
+---
+
 ## Quick start (Docker)
 
 ```bash
@@ -159,7 +181,7 @@ Logs are JSON lines on stdout (`docker compose logs -f api worker`). Every faile
 pytest
 ```
 
-69 tests, no network needed. They cover link parsing, filters, rate limiting, cookies, output formats, romanisation, engine response parsing, ffmpeg audio extraction, and end-to-end API runs on the demo extractor, including: kill the worker midway → resume without re-downloading; a 429 → cooldown → finish; private/missing/invalid inputs → clear errors; transcribe-only cleanup; dedupe across jobs; cancel and re-run.
+69 tests, no network needed. They also run on GitHub Actions on every push. They cover link parsing, filters, rate limiting, cookies, output formats, romanisation, engine response parsing, ffmpeg audio extraction, and end-to-end API runs on the demo extractor, including: kill the worker midway → resume without re-downloading; a 429 → cooldown → finish; private/missing/invalid inputs → clear errors; transcribe-only cleanup; dedupe across jobs; cancel and re-run.
 
 ## Troubleshooting
 
