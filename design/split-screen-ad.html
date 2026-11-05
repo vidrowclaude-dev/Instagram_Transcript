@@ -1,0 +1,340 @@
+<title>Split-Screen Product Ad</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: editor stage (ad preview, scaled with container units) beside a narrow control rail; stacks on phones. */
+:root {
+  --bg: #f2f3ec;
+  --surface: #ffffff;
+  --fg: #1d2010;
+  --muted: #6a6f58;
+  --line: #dfe2d2;
+  --stage: #1e1f1c;
+  --accent: #8ea100;
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15160f; --surface: #1f2117; --fg: #eef0e2; --muted: #a2a78e;
+    --line: #34372a; --stage: #0c0d0a; --accent: #c8dc00; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15160f; --surface: #1f2117; --fg: #eef0e2; --muted: #a2a78e;
+  --line: #34372a; --stage: #0c0d0a; --accent: #c8dc00; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 32px;
+}
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 16px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+h1 { font-size: 20px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+header p { margin: 0; color: var(--muted); font-size: 13px; }
+
+.app { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+@media (max-width: 860px) { .app { grid-template-columns: minmax(0, 1fr); } }
+
+.stage {
+  background: var(--stage); border-radius: 12px; padding: clamp(12px, 3vw, 36px);
+  display: grid; place-items: center; min-width: 0;
+}
+
+/* ---------- THE AD (fixed look, independent of theme) ---------- */
+.ad {
+  --panel: #b5c824;
+  --btn: #c8dc00;
+  --badge: #4c5a1c;
+  container-type: inline-size;
+  width: 100%; max-width: 100%;
+  aspect-ratio: 16 / 9;
+  display: grid; grid-template-columns: 42% 58%;
+  overflow: hidden; background: #000;
+  font-family: "Inter", system-ui, sans-serif;
+  color: #111;
+}
+.ad.ratio-1x1 { aspect-ratio: 1 / 1; grid-template-columns: 50% 50%; }
+.ad.ratio-9x16 { aspect-ratio: 9 / 16; grid-template-columns: 1fr; grid-template-rows: 50% 50%; max-width: 420px; }
+.ad.flip .panel { order: 2; }
+
+.panel {
+  background: var(--panel);
+  display: grid; place-items: center;
+  padding: 3cqw;
+  position: relative;
+}
+.card {
+  width: 82%;
+  border-radius: 2cqw;
+  background: rgba(255,255,255,0.28);
+  border: 0.25cqw solid rgba(255,255,255,0.75);
+  box-shadow: 0 1cqw 3cqw rgba(40,50,0,0.18);
+  overflow: hidden;
+  display: grid;
+}
+.ratio-1x1 .card { width: 86%; border-radius: 2.4cqw; }
+.ratio-9x16 .card { width: 74%; border-radius: 4cqw; }
+
+.product {
+  aspect-ratio: 4 / 2.6;
+  display: grid; place-items: center;
+  padding: 3cqw 3cqw 1cqw;
+}
+.product img, .product svg { width: 100%; height: 100%; object-fit: contain; }
+
+.info {
+  position: relative;
+  background: #e8edd0;
+  padding: 3.6cqw 1.8cqw 1.4cqw;
+  display: grid; gap: 1.3cqw;
+  /* folder-tab silhouette: raised tab on the left, slanted shoulder */
+  clip-path: polygon(0 0, 30% 0, 35% 1.5cqw, 100% 1.5cqw, 100% 100%, 0 100%);
+  margin-top: -0.6cqw;
+}
+.ratio-9x16 .info { padding: 6cqw 3.4cqw 2.8cqw; gap: 2.4cqw; clip-path: polygon(0 0, 30% 0, 35% 2.6cqw, 100% 2.6cqw, 100% 100%, 0 100%); }
+.ratio-1x1 .info { padding: 4.4cqw 2.2cqw 1.8cqw; }
+
+.badge {
+  justify-self: start;
+  display: inline-flex; align-items: center; gap: 0.4cqw;
+  background: var(--badge); color: #f1f5dd;
+  font-size: 1.05cqw; font-weight: 700; letter-spacing: 0.02em;
+  padding: 0.3cqw 0.6cqw; border-radius: 0.35cqw;
+  margin-left: 0.8cqw;
+}
+.badge svg { width: 1.1cqw; height: 1.1cqw; }
+.title {
+  margin: 0.4cqw 0 0.6cqw 1cqw;
+  font-size: 2.6cqw; font-weight: 700; letter-spacing: -0.015em; line-height: 1.1;
+  text-wrap: balance;
+}
+.cta {
+  background: var(--btn); color: #1a1d05;
+  border-radius: 0.7cqw; text-align: center;
+  font-size: 1.45cqw; font-weight: 500;
+  padding: 0.9cqw;
+}
+.ratio-1x1 .badge { font-size: 1.4cqw; padding: 0.4cqw 0.8cqw; }
+.ratio-1x1 .badge svg { width: 1.4cqw; height: 1.4cqw; }
+.ratio-1x1 .title { font-size: 3.4cqw; }
+.ratio-1x1 .cta { font-size: 1.9cqw; padding: 1.2cqw; border-radius: 0.9cqw; }
+.ratio-9x16 .badge { font-size: 2.6cqw; padding: 0.7cqw 1.4cqw; border-radius: 0.8cqw; gap: 0.8cqw; margin-left: 1.6cqw; }
+.ratio-9x16 .badge svg { width: 2.6cqw; height: 2.6cqw; }
+.ratio-9x16 .title { font-size: 6cqw; margin-left: 2cqw; }
+.ratio-9x16 .cta { font-size: 3.4cqw; padding: 2.2cqw; border-radius: 1.6cqw; }
+
+.media { position: relative; overflow: hidden; min-height: 0; }
+.media video, .media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.placeholder {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 22% 30%, rgba(255,214,140,0.35) 0 4%, transparent 14%),
+    radial-gradient(circle at 78% 22%, rgba(255,230,180,0.22) 0 3%, transparent 12%),
+    radial-gradient(circle at 60% 70%, rgba(190,150,90,0.25) 0 6%, transparent 22%),
+    linear-gradient(160deg, #5a4a33 0%, #3a2f22 45%, #1f1a14 100%);
+  display: grid; place-items: center;
+}
+.placeholder span {
+  font-family: var(--font-mono); color: rgba(255,240,215,0.75);
+  font-size: 1.3cqw; letter-spacing: 0.12em; text-transform: uppercase;
+  border: 1px dashed rgba(255,240,215,0.4); padding: 0.8cqw 1.4cqw; border-radius: 0.6cqw;
+}
+.ratio-9x16 .placeholder span { font-size: 2.8cqw; }
+
+/* entrance */
+.ad.play .card { animation: rise 700ms cubic-bezier(.2,.8,.2,1) both; }
+.ad.play .cta { animation: pop 500ms 550ms cubic-bezier(.2,.8,.2,1.4) both; }
+@keyframes rise { from { transform: translateY(14%) scale(.94); opacity: 0; } }
+@keyframes pop { from { transform: scale(.85); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ad.play .card, .ad.play .cta { animation: none; } }
+
+/* ---------- CONTROLS ---------- */
+.rail {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px; display: grid; gap: 16px; min-width: 0;
+}
+fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; }
+legend { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+label { display: grid; gap: 4px; font-size: 13px; font-weight: 500; }
+input[type="text"] {
+  font: inherit; font-size: 14px; padding: 8px 10px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg);
+}
+input[type="file"] { font-size: 12px; color: var(--muted); max-width: 100%; }
+.colors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.colors label { font-size: 12px; }
+input[type="color"] { width: 100%; height: 34px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 2px; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { flex: 1; font: inherit; font-size: 13px; padding: 7px 4px; background: transparent; color: var(--fg); border: 0; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #15170a; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hint { font-size: 12px; color: var(--muted); margin: 0; line-height: 1.45; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Split-Screen Product Ad</h1>
+    <p>Product card on a colour panel, your clip beside it. Edit on the right, screenshot or screen-record the preview.</p>
+  </header>
+
+  <div class="app">
+    <div class="stage">
+      <div class="ad play" id="ad">
+        <div class="panel">
+          <div class="card">
+            <div class="product" id="product">
+              <!-- default artwork: generic, unbranded tool kit -->
+              <svg viewBox="0 0 400 260" aria-label="Drill, spray can and bit set">
+                <ellipse cx="200" cy="238" rx="150" ry="10" fill="rgba(60,70,0,.18)"/>
+                <!-- bit set -->
+                <rect x="268" y="96" width="76" height="134" rx="8" fill="#f2c318"/>
+                <rect x="276" y="106" width="60" height="96" rx="4" fill="#e3a90f"/>
+                <g stroke="#cfd4d8" stroke-width="4" stroke-linecap="round">
+                  <line x1="288" y1="114" x2="288" y2="192"/><line x1="298" y1="118" x2="298" y2="192"/>
+                  <line x1="308" y1="112" x2="308" y2="192"/><line x1="318" y1="120" x2="318" y2="192"/>
+                  <line x1="328" y1="116" x2="328" y2="192"/>
+                </g>
+                <rect x="276" y="208" width="60" height="14" rx="3" fill="#c5122a"/>
+                <!-- spray can -->
+                <rect x="80" y="70" width="10" height="16" fill="#c5122a"/>
+                <rect x="66" y="84" width="38" height="18" rx="6" fill="#d8dadf"/>
+                <rect x="58" y="100" width="54" height="134" rx="10" fill="#1d4fb8"/>
+                <rect x="58" y="118" width="54" height="40" fill="#f4cf14"/>
+                <circle cx="85" cy="138" r="14" fill="#c5122a"/>
+                <rect x="66" y="172" width="38" height="4" rx="2" fill="#9db4ee"/>
+                <rect x="66" y="182" width="30" height="4" rx="2" fill="#9db4ee"/>
+                <rect x="66" y="192" width="34" height="4" rx="2" fill="#9db4ee"/>
+                <!-- drill -->
+                <rect x="96" y="40" width="70" height="6" rx="3" fill="#8b9096"/>
+                <rect x="150" y="30" width="30" height="26" rx="5" fill="#2b2f33"/>
+                <path d="M176 22 h96 a28 28 0 0 1 28 28 v8 a28 28 0 0 1 -28 28 h-96 z" fill="#1f6f8b"/>
+                <rect x="262" y="34" width="34" height="40" rx="10" fill="#174f63"/>
+                <path d="M206 84 h50 l-8 98 h-36 z" fill="#1f6f8b"/>
+                <path d="M214 92 h34 l-6 78 h-24 z" fill="#2b2f33"/>
+                <rect x="190" y="178" width="84" height="56" rx="8" fill="#26292d"/>
+                <rect x="196" y="186" width="72" height="12" rx="3" fill="#c5122a"/>
+                <rect x="194" y="104" width="12" height="22" rx="4" fill="#c5122a"/>
+              </svg>
+            </div>
+            <div class="info">
+              <span class="badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                <span id="badgeText">60 MINS</span>
+              </span>
+              <p class="title" id="titleText">Power Tools &amp; More</p>
+              <div class="cta" id="ctaText">Add to cart</div>
+            </div>
+          </div>
+        </div>
+        <div class="media" id="media">
+          <div class="placeholder"><span>Upload your clip →</span></div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="rail">
+      <fieldset>
+        <legend>Format</legend>
+        <div class="seg" role="group" aria-label="Aspect ratio">
+          <button type="button" id="r169" data-ratio="" aria-pressed="true">16:9</button>
+          <button type="button" id="r11" data-ratio="ratio-1x1" aria-pressed="false">1:1</button>
+          <button type="button" id="r916" data-ratio="ratio-9x16" aria-pressed="false">9:16</button>
+        </div>
+        <div class="row">
+          <button type="button" class="btn" id="flipBtn">Swap sides</button>
+          <button type="button" class="btn primary" id="replayBtn">Replay intro</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Media</legend>
+        <label for="productFile">Product image (transparent PNG works best)
+          <input type="file" id="productFile" accept="image/*">
+        </label>
+        <label for="mediaFile">Clip or photo for the other side
+          <input type="file" id="mediaFile" accept="video/*,image/*">
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Copy</legend>
+        <label for="badgeIn">Badge <input type="text" id="badgeIn" value="60 MINS"></label>
+        <label for="titleIn">Headline <input type="text" id="titleIn" value="Power Tools & More"></label>
+        <label for="ctaIn">Button <input type="text" id="ctaIn" value="Add to cart"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Colour</legend>
+        <div class="colors">
+          <label for="panelC">Panel <input type="color" id="panelC" value="#b5c824"></label>
+          <label for="btnC">Button <input type="color" id="btnC" value="#c8dc00"></label>
+          <label for="badgeC">Badge <input type="color" id="badgeC" value="#4c5a1c"></label>
+        </div>
+      </fieldset>
+
+      <p class="hint">Files stay in your browser. To get a video out, screen-record the preview while your clip plays.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+  const ad = document.getElementById('ad');
+  const $ = id => document.getElementById(id);
+
+  const bindText = (inId, outId) => $(inId).addEventListener('input', e => { $(outId).textContent = e.target.value; });
+  bindText('badgeIn', 'badgeText');
+  bindText('titleIn', 'titleText');
+  bindText('ctaIn', 'ctaText');
+
+  [['panelC', '--panel'], ['btnC', '--btn'], ['badgeC', '--badge']].forEach(([id, v]) =>
+    $(id).addEventListener('input', e => ad.style.setProperty(v, e.target.value)));
+
+  const replay = () => { ad.classList.remove('play'); void ad.offsetWidth; ad.classList.add('play'); };
+  $('replayBtn').addEventListener('click', () => {
+    replay();
+    const v = ad.querySelector('video'); if (v) { v.currentTime = 0; v.play().catch(() => {}); }
+  });
+  $('flipBtn').addEventListener('click', () => ad.classList.toggle('flip'));
+
+  document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    ad.classList.remove('ratio-1x1', 'ratio-9x16');
+    if (b.dataset.ratio) ad.classList.add(b.dataset.ratio);
+    replay();
+  }));
+
+  let urls = {};
+  const objUrl = (key, file) => { if (urls[key]) URL.revokeObjectURL(urls[key]); return (urls[key] = URL.createObjectURL(file)); };
+
+  $('productFile').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    const img = new Image(); img.alt = 'Product'; img.src = objUrl('p', f);
+    $('product').replaceChildren(img); replay();
+  });
+
+  $('mediaFile').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    const src = objUrl('m', f);
+    let el;
+    if (f.type.startsWith('video/')) {
+      el = document.createElement('video');
+      Object.assign(el, { src, muted: true, loop: true, autoplay: true, playsInline: true });
+      el.play().catch(() => {});
+    } else {
+      el = new Image(); el.alt = ''; el.src = src;
+    }
+    $('media').replaceChildren(el); replay();
+  });
+})();
+</script>
