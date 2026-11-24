@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40" role="img" aria-label="vidrow">
+  <!-- Placeholder wordmark. The installer replaces this file with https://vidrow.co/Logo.svg -->
+  <rect x="2" y="8" width="24" height="24" rx="6" fill="#715BE4"/>
+  <path d="M9 15 L14 26 L19 15" fill="none" stroke="#F5FA5E" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="34" y="28" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#111">vidrow</text>
+</svg>

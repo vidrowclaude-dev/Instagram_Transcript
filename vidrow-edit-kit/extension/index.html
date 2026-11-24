@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vidrow Edit Kit</title>
+  <link rel="stylesheet" href="css/panel.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <div class="logo-tile"><img id="logo" src="img/logo.svg" alt="vidrow"></div>
+      <div class="brand-text"><b>Edit Kit</b></div>
+    </div>
+    <div class="top-right">
+      <span id="conn" class="conn" title="Checking Premiere…"><i></i><span id="connText">Premiere</span></span>
+      <button id="btnSettings" class="icon-btn" title="Settings">⚙</button>
+    </div>
+  </header>
+
+  <div class="jobrow">
+    <label for="jobName">Job</label>
+    <input id="jobName" data-draft type="text" placeholder="e.g. Bachatt EMI Ad">
+  </div>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="script">Script</button>
+    <button class="tab" data-tab="footage">Footage <span class="count" id="cntFootage"></span></button>
+    <button class="tab" data-tab="format">Format</button>
+    <button class="tab" data-tab="client">Client</button>
+    <button class="tab" data-tab="music">Music</button>
+    <button class="tab" data-tab="brief">Brief</button>
+  </nav>
+
+  <main id="main">
+    <!-- SCRIPT -->
+    <section class="pane active" id="pane-script">
+      <p class="hint">Paste the full script straight from Google Docs, labelled <b>Hook 1</b>, <b>Hook 2</b>, <b>Hook 3</b>, <b>Body</b>. Links become <code>[LINK: url]</code>, yellow-highlighted text becomes <code>[CALLOUT: text]</code>.</p>
+      <textarea id="script" data-draft class="big" spellcheck="false" placeholder="Hook 1&#10;Kya aap bhi EMI se pareshan ho?&#10;&#10;Hook 2&#10;…&#10;&#10;Body&#10;…"></textarea>
+      <div class="script-stats" id="scriptStats"></div>
+    </section>
+
+    <!-- FOOTAGE -->
+    <section class="pane" id="pane-footage">
+      <p class="hint">Every raw take. Fillers, director talk, retakes and pauses are removed automatically.</p>
+      <div class="btnrow">
+        <button class="btn" id="fAddFiles">Add files</button>
+        <button class="btn" id="fAddFolder">Add folder</button>
+        <button class="btn" id="fFromProject">From Project panel…</button>
+        <button class="btn" id="fUseSel">Use selection</button>
+      </div>
+      <input type="file" id="fileInputFootage" multiple hidden accept="video/*,audio/*">
+      <ul class="filelist" id="listFootage"></ul>
+      <button class="link-btn" id="fClear">Clear all</button>
+    </section>
+
+    <!-- FORMAT -->
+    <section class="pane" id="pane-format">
+      <div class="formats" id="formatList"></div>
+      <div class="format-detail" id="formatDetail"></div>
+      <div class="grid2">
+        <label>Aspect
+          <select id="aspect" data-draft>
+            <option value="9:16">9:16 (default)</option><option value="4:5">4:5</option><option value="1:1">1:1</option><option value="16:9">16:9</option>
+          </select>
+        </label>
+        <label>App screens
+          <select id="appScreens" data-draft>
+            <option value="split">Split screen (default)</option>
+            <option value="full">Full screen</option>
+            <option value="phone">Full screen phone UI</option>
+          </select>
+        </label>
+      </div>
+      <p class="hint" id="appScreensHint"></p>
+      <fieldset class="box">
+        <legend>Reference ad <span class="muted">(optional, overrides format pacing)</span></legend>
+        <div class="seg" id="refType">
+          <button data-v="none" class="on">None</button><button data-v="link">Link</button><button data-v="file">File</button><button data-v="project">Project clip</button>
+        </div>
+        <div class="ref-body" data-ref="link"><input id="refUrl" data-draft type="url" placeholder="Instagram / YouTube / Facebook / TikTok / X link"></div>
+        <div class="ref-body" data-ref="file"><button class="btn" id="refPickFile">Choose file…</button> <span class="muted" id="refFileName"></span></div>
+        <div class="ref-body" data-ref="project"><button class="btn" id="refPickProject">Pick from Project panel…</button> <span class="muted" id="refProjectName"></span></div>
+      </fieldset>
+    </section>
+
+    <!-- CLIENT -->
+    <section class="pane" id="pane-client">
+      <label>Client name <input id="clientName" data-draft type="text" placeholder="e.g. Bachatt"></label>
+      <fieldset class="box">
+        <legend>Assets</legend>
+        <div class="btnrow">
+          <button class="btn" id="aAddFiles">Add files</button>
+          <button class="btn" id="aAddFolder">Add folder</button>
+          <button class="btn" id="aFromProject">From Project panel…</button>
+        </div>
+        <input type="file" id="fileInputAssets" multiple hidden accept="image/*,video/*">
+        <ul class="filelist" id="listAssets"></ul>
+      </fieldset>
+      <fieldset class="box">
+        <legend>Asset links</legend>
+        <div id="linkRows"></div>
+        <button class="link-btn" id="addLink">+ Add link</button>
+        <p class="hint">Figma uses your token from Settings. Drive folders shared as “Anyone with the link” need no key. Other = direct file or .zip links (Dropbox works).</p>
+      </fieldset>
+      <fieldset class="box">
+        <legend>Callout style</legend>
+        <div class="callout-styles" id="calloutStyles">
+          <label class="cs"><input type="radio" name="callout" value="white" checked><span class="sw sw-white">Aa</span>White box</label>
+          <label class="cs"><input type="radio" name="callout" value="black"><span class="sw sw-black">Aa</span>Black box</label>
+          <label class="cs"><input type="radio" name="callout" value="brand"><span class="sw sw-brand" id="swBrand">Aa</span>Brand colour <input type="color" id="brandColor" data-draft value="#715BE4" title="Brand colour"></label>
+        </div>
+      </fieldset>
+      <label>Brand notes <textarea id="brandNotes" data-draft rows="3" placeholder="Tone, words to avoid, logo rules, offer wording…"></textarea></label>
+    </section>
+
+    <!-- MUSIC -->
+    <section class="pane" id="pane-music">
+      <label>Music library link
+        <input id="musicLib" data-draft type="text" value="https://drive.google.com/drive/folders/1NhlxFBq__mEMgJgqml_apbTUmMr-__LJ">
+      </label>
+      <p class="hint">Any shared Drive folder, Dropbox link or Mac folder (/Users/…). Tracks are matched by folder and file names; corporate-sounding tracks are always skipped.</p>
+      <div class="grid2">
+        <label>Track 1 genre <select id="track1" data-draft></select></label>
+        <label>Track 2 genre <select id="track2" data-draft></select></label>
+      </div>
+      <p class="hint">Track 2 takes over when the app or client is first named.</p>
+      <div class="grid2">
+        <label>Track 1 starts
+          <select id="musicStart" data-draft>
+            <option value="first">First frame (with the hook)</option>
+            <option value="body">Start of the Body</option>
+            <option value="custom">Custom…</option>
+          </select>
+        </label>
+        <label id="musicStartSecWrap" hidden>At (seconds) <input id="musicStartSec" data-draft type="number" min="0" step="0.1" value="0"></label>
+      </div>
+      <label>Music level <span class="val" id="musicLevelVal">−20 dB</span>
+        <input id="musicLevel" data-draft type="range" min="-32" max="-10" step="1" value="-20">
+      </label>
+    </section>
+
+    <!-- BRIEF -->
+    <section class="pane" id="pane-brief">
+      <label>Anything extra <textarea id="brief" data-draft rows="5" placeholder="Offer details, what to emphasise, CTA wording, things to avoid…"></textarea></label>
+      <div class="grid2">
+        <label>Max hook length (s) <input id="maxHook" data-draft type="number" min="1" step="0.5"></label>
+        <label>Max body length (s) <input id="maxBody" data-draft type="number" min="5" step="1"></label>
+      </div>
+      <fieldset class="box">
+        <legend>Deliver as</legend>
+        <label class="radio"><input type="radio" name="deliver" value="separate" checked> Separate Hook 1/2/3 + Body files</label>
+        <label class="radio"><input type="radio" name="deliver" value="stitched"> Stitched Hook + Body</label>
+        <label class="toggle"><input type="checkbox" id="autoExport" data-draft> <span></span> Auto-export after building</label>
+      </fieldset>
+      <fieldset class="box last-edit" id="lastEdit">
+        <legend>Last edit</legend>
+        <div id="lastEditBody" class="muted">No edit yet.</div>
+        <div class="btnrow">
+          <button class="btn" id="btnRebuild" disabled>Rebuild timelines</button>
+          <button class="btn" id="btnExport" disabled>Export</button>
+          <button class="btn" id="btnOpenJob" disabled>Open job folder</button>
+        </div>
+      </fieldset>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="grid2 tight">
+      <label>Edit with <select id="model"></select></label>
+      <label>Effort <select id="effort">
+        <option value="low">low</option><option value="medium">medium</option><option value="high" selected>high</option><option value="xhigh">xhigh</option><option value="max">max</option>
+      </select></label>
+    </div>
+    <div class="model-hint" id="modelHint"></div>
+    <button class="go" id="btnGenerate"><span class="spin"></span><span class="label">Generate edit</span></button>
+    <div class="status" id="status"></div>
+    <details class="log" id="logBox">
+      <summary>Log <span class="muted" id="logCount"></span><button class="link-btn" id="logCopy" title="Copy log">copy</button></summary>
+      <div class="log-lines" id="log"></div>
+    </details>
+  </footer>
+
+  <!-- Project browser -->
+  <div class="modal" id="projModal" hidden>
+    <div class="sheet">
+      <div class="sheet-head"><b id="projTitle">Project panel</b><button class="icon-btn" data-close>✕</button></div>
+      <input type="search" id="projFilter" placeholder="Filter clips…">
+      <div class="proj-list" id="projList"></div>
+      <div class="sheet-foot"><span class="muted" id="projCount"></span><button class="btn primary" id="projAdd">Add selected</button></div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="modal" id="setModal" hidden>
+    <div class="sheet">
+      <div class="sheet-head"><b>Settings</b><button class="icon-btn" data-close>✕</button></div>
+      <div class="sheet-body">
+        <p class="hint">Keys are stored only on this Mac (~/Library/Application Support/Vidrow Edit Kit/settings.json).</p>
+        <h4>Claude</h4>
+        <label>Anthropic API key <input id="sAnthropic" type="password" placeholder="sk-ant-…" autocomplete="off"></label>
+        <label>Default model <select id="sModel"></select></label>
+        <h4>Transcription</h4>
+        <label>Transcriber
+          <select id="sTranscriber"><option value="openai">OpenAI Whisper (cloud, key needed)</option><option value="whispercpp">whisper.cpp (free, offline)</option></select>
+        </label>
+        <label data-tr="openai">OpenAI API key <input id="sOpenAI" type="password" placeholder="sk-…" autocomplete="off"></label>
+        <label data-tr="whispercpp">whisper.cpp binary <input id="sWhisperBin" type="text" placeholder="/opt/homebrew/bin/whisper-cli"></label>
+        <label data-tr="whispercpp">whisper.cpp model <input id="sWhisperModel" type="text" placeholder="~/models/ggml-large-v3-turbo.bin"></label>
+        <label>Spoken language
+          <select id="sLanguage"><option value="hinglish">Hindi / Hinglish</option><option value="english">English</option><option value="auto">Auto-detect</option></select>
+        </label>
+        <h4>Downloads</h4>
+        <label>Figma personal access token <input id="sFigma" type="password" autocomplete="off"></label>
+        <label>Google API key <span class="muted">(optional)</span> <input id="sGoogle" type="password" autocomplete="off"></label>
+        <label>yt-dlp path <input id="sYtdlp" type="text" placeholder="yt-dlp (from Homebrew)"></label>
+        <label>Use logins from browser <span class="muted">(Instagram / Facebook references)</span>
+          <select id="sCookies"><option value="off">Off</option><option value="chrome">Chrome</option><option value="safari">Safari</option><option value="firefox">Firefox</option><option value="edge">Edge</option><option value="brave">Brave</option></select>
+        </label>
+        <h4>Output</h4>
+        <label>Output folder <input id="sOutput" type="text"></label>
+        <label>Export preset (.epr) <span class="muted">(blank = find “Match Source – High bitrate”)</span> <input id="sPreset" type="text"></label>
+        <label class="toggle"><input type="checkbox" id="sAutoStart" checked> <span></span> Start the Media Encoder queue automatically</label>
+        <p class="hint">Set Premiere → Settings → Media → <b>Default Media Scaling = None</b>. The panel sets scale and position itself.</p>
+      </div>
+      <div class="sheet-foot"><span class="muted" id="setSaved"></span><button class="btn primary" id="setSave">Save</button></div>
+    </div>
+  </div>
+
+  <script src="js/panel/cep.js"></script>
+  <script src="js/panel/bridge.js"></script>
+  <script src="js/panel/paste.js"></script>
+  <script src="js/panel/renderers.js"></script>
+  <script src="js/panel/faces.js"></script>
+  <script src="js/panel/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "vidrow-edit-kit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vidrow Edit Kit: Premiere Pro panel that turns a script + raw takes into finished ad timelines with Claude.",
+  "scripts": {
+    "check:jsx": "node scripts/check-jsx.js",
+    "test": "npm run check:jsx && node tests/run.js",
+    "screenshot": "node tests/screenshot.js",
+    "package": "bash scripts/package.sh"
+  },
+  "devDependencies": {
+    "acorn": "^8.15.0"
+  }
+}
