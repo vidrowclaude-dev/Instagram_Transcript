@@ -33,6 +33,7 @@ Install Vidrow Edit Kit.command, scripts/package.sh → dist/Vidrow_Edit_Kit.zip
 npm install                 # acorn (dev only)
 npm run check:jsx           # host.jsx must be ES3: acorn --ecma3 + banned ES5 methods
 npm test                    # check:jsx + node tests/run.js  (VERBOSE=1 to print pipeline logs; arg filters by name)
+node tests/ui-cep.js        # panel under CEP-like globals: every button must respond
 node tests/screenshot.js    # Playwright: screenshots in tests/screenshots, paste/renderers/face-api in Chromium
 npm run package             # dist/Vidrow_Edit_Kit.zip
 ```
@@ -58,6 +59,7 @@ Tests need ffmpeg. Transcription and Claude are mocked (env.transcribe / env.cal
 - Effort goes in `output_config.effort`; rejected level → step down to high; rejected field → drop and log. max_tokens 32000 (64000 for xhigh/max). 30-min timeout; streaming SSE.
 - `fallbacks: "default"` (beta server-side-fallback-2026-07-01) is sent for Opus/Fable/Sonnet; dropped automatically if rejected.
 - CEP Node has no fetch; GUI PATH lacks Homebrew (util.js adds /opt/homebrew/bin, /usr/local/bin).
+- CEP's mixed context defines global `module`/`exports`/`require`: browser scripts in js/panel must attach to `window` (not `module.exports`), or app.js crashes on load and no button works. tests/ui-cep.js loads the panel with those globals and clicks every button — run it after UI changes.
 - face-api must be evaluated with require/module/exports/process/define hidden or it picks the Node build.
 - Default Media Scaling must be None (README tells editors).
 - Cache: transcripts, silences, faces, downloads, Drive listings, renders under `<output>/.cache` and `<job>/Renders`.

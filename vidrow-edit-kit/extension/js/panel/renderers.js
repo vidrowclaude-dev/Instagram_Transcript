@@ -1,8 +1,10 @@
 /* Canvas renderers that run in the panel: callout boxes and the phone frame.
    Output: full-frame transparent PNGs (placed in Premiere at Scale 100, centred = exact). */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory();
-  else root.VEKRenderers = factory();
+  // CEP's mixed Node/browser context defines a global `module`, so always attach to window too.
+  var api = factory();
+  if (typeof window !== 'undefined') window.VEKRenderers = api; else if (root) root.VEKRenderers = api;
+  if (typeof module === 'object' && module && module.exports && typeof window === 'undefined') module.exports = api;
 })(typeof self !== 'undefined' ? self : this, function () {
   var LIME = '#F5FA5E', PURPLE = '#715BE4';
 

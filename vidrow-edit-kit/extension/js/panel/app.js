@@ -1,6 +1,17 @@
 /* Vidrow Edit Kit — panel UI. Pipeline lives in js/node/* (Node, via CEP mixed context). */
 (function () {
   'use strict';
+  // Show any startup/runtime error in the panel instead of failing silently.
+  function showFatal(msg) {
+    var el = document.getElementById('status');
+    if (el) { el.className = 'status err'; el.textContent = 'Panel error: ' + msg + ' (see Log)'; }
+    var lg = document.getElementById('log');
+    if (lg) { var d = document.createElement('div'); d.className = 'error'; d.textContent = 'Panel error: ' + msg; lg.appendChild(d); }
+  }
+  window.addEventListener('error', function (e) { showFatal(e.message + (e.filename ? ' @ ' + e.filename.split('/').pop() + ':' + e.lineno : '')); });
+  window.addEventListener('unhandledrejection', function (e) { showFatal(String(e.reason && e.reason.message || e.reason)); });
+  var missing = ['VEKHost', 'VEKBridge', 'VEKPaste', 'VEKRenderers', 'VEKFaces'].filter(function (k) { return !window[k]; });
+  if (missing.length) { showFatal('scripts not loaded: ' + missing.join(', ')); }
   var H = window.VEKHost;
   var req = H.node;
   var EXT = H.extensionPath();
@@ -250,10 +261,19 @@
 
   // ---------------------------------------------------------------- formats
   function loadFormats() {
-    if (req) {
-      try { return Promise.resolve(JSON.parse(req('fs').readFileSync(EXT + '/presets/formats.json', 'utf8')).formats); } catch (e) { return Promise.resolve([]); }
+    if (req && EXT) {
+      try { return Promise.resolve(JSON.parse(req('fs').readFileSync(EXT + '/presets/formats.json', 'utf8')).formats); } catch (e) { /* fall back below */ }
     }
-    return fetch('presets/formats.json').then(function (r) { return r.json(); }).then(function (j) { return j.formats; }).catch(function () { return []; });
+    return new Promise(function (resolve) {
+      var x = new XMLHttpRequest();
+      x.open('GET', 'presets/formats.json');
+      x.onload = function () { try { resolve(JSON.parse(x.responseText).formats); } catch (e) { resolve([]); } };
+      x.onerror = function () { resolve([]); };
+      x.send();
+    }).then(function (f) {
+      if (!f.length) status('Could not read presets/formats.json — reinstall the panel.', 'err');
+      return f;
+    });
   }
   function renderFormats() {
     $('formatList').innerHTML = formats.map(function (f) {

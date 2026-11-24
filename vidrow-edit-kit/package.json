@@ -7,6 +7,7 @@
     "check:jsx": "node scripts/check-jsx.js",
     "test": "npm run check:jsx && node tests/run.js",
     "screenshot": "node tests/screenshot.js",
+    "test:ui": "node tests/ui-cep.js && node tests/screenshot.js",
     "package": "bash scripts/package.sh"
   },
   "devDependencies": {

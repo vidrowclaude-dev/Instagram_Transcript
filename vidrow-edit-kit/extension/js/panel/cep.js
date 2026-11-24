@@ -6,9 +6,12 @@
   var nodeRequire = (window.cep_node && window.cep_node.require) || (typeof window.require === 'function' ? window.require : null);
 
   function systemPath(type) {
-    if (!inCEP) return '';
-    var p = decodeURI(cep.getSystemPath(type));
-    return p.replace(/^file:\/\/\/?/, '/').replace(/^\/([A-Za-z]:)/, '$1');
+    var p = '';
+    try { if (inCEP) p = decodeURI(cep.getSystemPath(type) || ''); } catch (e) { p = ''; }
+    p = p.replace(/^file:\/\/\/?/, '/').replace(/^\/([A-Za-z]:)/, '$1');
+    // fallback: the folder index.html was loaded from
+    if (!p && type === 'extension' && location.protocol === 'file:') p = decodeURI(location.pathname).replace(/\/[^\/]*$/, '');
+    return p;
   }
 
   window.VEKHost = {

@@ -1,8 +1,10 @@
 /* Rich paste from Google Docs → plain script text.
    Hyperlinks become "text [LINK: url]"; yellow-highlighted (or yellow) text becomes "[CALLOUT: text]". */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory();
-  else root.VEKPaste = factory();
+  // CEP's mixed Node/browser context defines a global `module`, so always attach to window too.
+  var api = factory();
+  if (typeof window !== 'undefined') window.VEKPaste = api; else if (root) root.VEKPaste = api;
+  if (typeof module === 'object' && module && module.exports && typeof window === 'undefined') module.exports = api;
 })(typeof self !== 'undefined' ? self : this, function () {
   var BLOCK = /^(P|DIV|LI|H[1-6]|TR|BR|UL|OL|TABLE|BLOCKQUOTE|SECTION)$/;
 

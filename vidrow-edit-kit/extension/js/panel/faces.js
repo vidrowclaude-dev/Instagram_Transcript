@@ -4,8 +4,10 @@
    - Weights are read from disk and decoded with tf.io.decodeWeights (no fetch).
    - SSD MobileNet first, Tiny Face Detector as a second opinion. */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory();
-  else root.VEKFaces = factory();
+  // CEP's mixed Node/browser context defines a global `module`, so always attach to window too.
+  var api = factory();
+  if (typeof window !== 'undefined') window.VEKFaces = api; else if (root) root.VEKFaces = api;
+  if (typeof module === 'object' && module && module.exports && typeof window === 'undefined') module.exports = api;
 })(typeof self !== 'undefined' ? self : this, function () {
   var api = null, loading = null;
 
